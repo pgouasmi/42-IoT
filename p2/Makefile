@@ -8,7 +8,7 @@ all: up ssh-server
 
 # Démarre les VMs
 up:
-	@echo "${YELLOW}Starting the VMs + k3s server...${NC}"
+	@echo "${YELLOW}Starting the VM + k3s server...${NC}"
 	@vagrant up
 	@echo "${GREEN}VM started${NC}"
 

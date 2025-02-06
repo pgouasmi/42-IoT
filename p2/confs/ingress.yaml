@@ -1,0 +1,35 @@
+#config basique ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-stripprefix@kubernetescrd
+  #   kubernetes.io/ingress.class: "nginx"
+  #   nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /app1/
+            pathType: Prefix
+            backend:
+              service:
+                name: clusterip1
+                port:
+                  number: 8080
+          - path: /app2/
+            pathType: Prefix
+            backend:
+              service:
+                name: clusterip2
+                port:
+                  number: 8080
+          - path: /app3/
+            pathType: Prefix
+            backend:
+              service:
+                name: clusterip3
+                port:
+                  number: 8080

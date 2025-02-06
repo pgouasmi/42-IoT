@@ -22,12 +22,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: helloworld2
+  name: clusterip2
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: helloworld2
   ports:
     - port: 8080        # Les autres services du cluster utilisent ce port
       targetPort: 80    # Le port de nginx dans le conteneur
-      nodePort: 30081 

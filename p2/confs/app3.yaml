@@ -16,18 +16,17 @@ spec:
       - name: helloworld3
         image: jfxs/hello-world
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: helloworld3
+  name: clusterip3
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: helloworld3
   ports:
     - port: 8080        # Les autres services du cluster utilisent ce port
       targetPort: 8080    # Le port de nginx dans le conteneur
-      nodePort: 30082   # Le port du node
