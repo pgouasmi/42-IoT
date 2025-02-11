@@ -3,7 +3,6 @@ YELLOW := \033[0;33m
 RED := \033[0;31m
 NC := \033[0m
 
-# Définition de la cible par défaut qui exécute rm-token puis up
 all: up ssh-server
 
 # Démarre les VMs

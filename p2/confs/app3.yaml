@@ -6,8 +6,8 @@ spec:
   selector:
     matchLabels:
       app: helloworld3
-  replicas: 1 # tells deployment to run 1 pods matching the template
-  template: # create pods using pod definition in this template
+  replicas: 1
+  template:
     metadata:
       labels:
         app: helloworld3
@@ -28,5 +28,5 @@ spec:
   selector:
     app: helloworld3
   ports:
-    - port: 8080        # Les autres services du cluster utilisent ce port
-      targetPort: 8080    # Le port de nginx dans le conteneur
+    - port: 8080
+      targetPort: 8080
