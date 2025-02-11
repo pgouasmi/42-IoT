@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: helloworld1
-        image: karthequian/helloworld:latest
+        # image: karthequian/helloworld:latest
+        image: nginxdemos/hello
         ports:
         - containerPort: 80
 

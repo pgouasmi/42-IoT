@@ -2,17 +2,17 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: mon-application
-  namespace: argocd     # Important : l'application doit être dans le namespace argocd
+  namespace: argocd
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/pgouasmi/IoT-pgouasmi-p3.git'    # Remplacez par votre URL GitHub
-    path: manifests     # Le dossier dans votre repo qui contient les manifestes
-    targetRevision: main    # La branche à surveiller
+    repoURL: 'https://github.com/pgouasmi/IoT-pgouasmi-p3.git'
+    path: manifests
+    targetRevision: main
   destination:
-    server: 'https://kubernetes.default.svc'    # Pointe vers le cluster local
-    namespace: dev      # Le namespace où déployer l'application
+    server: 'https://kubernetes.default.svc'
+    namespace: dev
   syncPolicy:
     automated:
-      prune: true      # Supprime les ressources qui ne sont plus dans Git
-      selfHeal: true   # Corrige automatiquement les différences
+      prune: true
+      selfHeal: true

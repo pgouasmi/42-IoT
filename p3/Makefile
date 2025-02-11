@@ -6,7 +6,20 @@ NC := \033[0m
 CLUSTER_NAME := IoT-Part3
 
 # Définition de la cible par défaut qui exécute rm-token puis up
-all: up
+all: up get-details
+
+install-deps:
+	@echo "${YELLOW}Installing k3d...${NC}"
+	curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+	@echo "${GREEN}k3d successfully installed!\n${NC}"
+	@echo "${YELLOW}Installing Docker...${NC}"
+	sh docker-install.sh
+	@echo "${GREEN}Docker successfully installed!\n${NC}"
+	@echo "${YELLOW}Installing kubectl...${NC}"
+	./kubectl-install.sh
+	@echo "${GREEN}kubectl successfully installed!\n${NC}"
+
+
 
 # Démarre les VMs
 up:
@@ -25,16 +38,25 @@ up:
 	@echo "${YELLOW} Deploying agrocd...${NC}"
 	kubectl apply -f argocd.yaml
 	@echo "${GREEN}agrocd up!${NC}"
-	
+
+argocd-forward:
+	sudo kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+get-details: get-argocd-url get-password get-app-url
 
 get-password:
 	@echo "${GREEN}cdagro web password:${NC}"
-	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+	@echo "\n"
 
-get-agrocd-url:
+get-argocd-url:
 	@echo "${GREEN}agrocd web client URL: ${NC}"
-	kubectl get svc argocd-server -n argocd
+	@kubectl get svc argocd-server -n argocd
 	@echo "${GREEN}Port: 8080"
+
+get-app-url:
+	@echo "${GREEN}App URL:\n${NC}"
+	sudo kubectl get service -n dev
 # Arrête les VMs
 down:
 	@echo "${YELLOW}Turning off the VM..${NC}."
@@ -44,7 +66,7 @@ down:
 # Nettoie l'environnement en supprimant les VMs
 clean:
 	@echo "${YELLOW}Cleaning up the cluster and docker resources${NC}"
-	k3d cluster delete ${CLUSTER_NAME}
+	sudo k3d cluster delete IoT-Part3
 	@echo "${GREEN}Cluster ${CLUSTER_NAME} successfully deleted!\n${NC}"
 
 
