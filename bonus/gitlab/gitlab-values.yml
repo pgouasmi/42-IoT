@@ -1,0 +1,42 @@
+global:
+  hosts:
+    domain: gitlab.k3d.local
+    https: false
+  ingress:
+    configureCertmanager: false
+    class: "traefik"  # Ou votre classe d'ingress
+  edition: ce
+
+certmanager:
+  install: false
+
+nginx-ingress:
+  enabled: false  # Désactivé car vous utilisez probablement déjà Traefik avec k3d
+
+gitlab-runner:
+  install: true  # Nécessaire pour les CI/CD pipelines
+  privileged: true
+
+persistence:
+  storageClass: "local-path"  # Ou votre classe de stockage par défaut dans k3d
+
+postgresql:
+  persistence:
+    size: 8Gi
+
+redis:
+  persistence:
+    size: 2Gi
+
+minio:
+  persistence:
+    size: 10Gi
+
+gitlab:
+  gitaly:
+    persistence:
+      size: 10Gi
+  toolbox:
+    backups:
+      objectStorage:
+        backend: s3
