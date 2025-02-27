@@ -4,8 +4,8 @@ RED := \033[0;31m
 NC := \033[0m
 
 CLUSTER_NAME := IoT-Bonus
-GITLAB_REPO := http://gitlab.localhost:8080/root/IoT-Bonus
-GITLAB_PORT := 8081
+GITLAB_REPO := http://gitlab.localhost:8080/root/gitlab-repo
+GITLAB_PORT := 8080
 
 
 all: up get-details
@@ -29,7 +29,7 @@ install-deps:
 	@echo "${GREEN}Gitlab's helm chart successfully pulled!${NC}"
 
 
-up: setup-cluster setup-gitlab gitlab-forward setup-gitlab-repo setup-argocd
+up: setup-cluster setup-gitlab create-tmp-dir gitlab-forward setup-gitlab-repo import-sources setup-argocd-secret setup-argocd argocd-forward
 
 
 setup-cluster:
@@ -57,21 +57,26 @@ setup-cluster:
 setup-gitlab:
 	@echo "${YELLOW}Deploying Gitlab...${NC}"
 	sh gitlab/install-gitlab-chart-cluster.sh
-	@echo "${GREEN}Gitlab successfully deployed!${NC}"
+	@echo "${GREEN}Gitlab successfully deployed!\n${NC}"
+
+
+create-tmp-dir:
+	@if [ ! -d "tmp" ]; then mkdir tmp; fi
 
 
 gitlab-forward:
-	@echo "Starting Gitlab port-forwarding in background..."
-	@nohup sudo kubectl port-forward -n gitlab service/gitlab-webservice-default $(GITLAB_PORT):8080 > gitlab-port-forward.log 2>&1 & echo $$! > .gitlab-port-forward.pid
-	@echo "Port-forwarding started on localhost:$(GITLAB_PORT)"
-	@echo "Check gitlab-port-forward.log for output"
+	@echo "${YELLOW}Starting Gitlab port-forwarding in background...${NC}"
+	@nohup sudo kubectl port-forward -n gitlab service/gitlab-webservice-default $(GITLAB_PORT):8181 > tmp/gitlab-port-forward.log 2>&1 & echo $$! > tmp/.gitlab-port-forward.pid
+	@echo "${GREEN}Port-forwarding started on localhost:$(GITLAB_PORT)${NC}"
+	@echo "${GREEN}Check tmp/gitlab-port-forward.log for output\n${NC}"
 
 
 gitlab-stop-forward:
-	@if [ -f .gitlab-port-forward.pid ]; then \
+	@if [ -f tmp/.gitlab-port-forward.pid ]; then \
 		echo "Stopping port-forwarding process..."; \
-		kill `cat .gitlab-port-forward.pid` || true; \
-		rm .gitlab-port-forward.pid; \
+		kill `cat tmp/.gitlab-port-forward.pid` || true; \
+		rm tmp/.gitlab-port-forward.pid; \
+		rm tmp/gitlab-port-forward.log; \
 	else \
 		echo "No port-forwarding process found."; \
 	fi
@@ -80,7 +85,13 @@ gitlab-stop-forward:
 setup-gitlab-repo:
 	@echo "${YELLOW}Setting up the Gitlab repo${NC}"
 	sh gitlab/setup-gitlab-repo.sh
-	@echo "${GREEN}Gitlab repo created!${NC}"
+	@echo "${GREEN}\nGitlab repo created!\n${NC}"
+
+
+setup-argocd-secret:
+	@echo "${YELLOW}\nSetting up the argocd secret${NC}"
+	@sh argocd/setup-argocd-secret.sh
+	@echo "${GREEN}ArgoCD secret created!\n${NC}"
 
 
 setup-argocd:
@@ -88,55 +99,80 @@ setup-argocd:
 	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 	@echo "${GREEN}argocd successfully installed in ${CLUSTER_NAME}!\n${NC}"
 
-	@echo "${YELLOW} Deploying agrocd...${NC}"
+	@echo "${YELLOW} Deploying ArgoCD...${NC}"
+	kubectl apply -f argocd/argocd-gitlab-secret.yaml
 	kubectl apply -f argocd/argocd.yaml
-	@echo "${GREEN}agrocd up!${NC}"
+	@echo "${GREEN}ArgoCD up!\n${NC}"
 
 
-
-setup-sources: clone-github clone-gitlab copy-sources delete-original push-gitlab
+import-sources: clone-github copy-sources delete-original push-gitlab
 
 
 clone-github:
+	@echo "${YELLOW}Cloning the github repo...${NC}"
 	mkdir original-sources
-	git clone https://github.com/pgouasmi/IoT-pgouasmi-p3.git original-sources/
-
-
-clone-gitlab:
-	mkdir gitlab-sources
-	git clone ${GITLAB_REPO} gitlab-sources/
+	git clone https://github.com/pgouasmi/IoT-pgouasmi-p3.git original-sources
+	@echo "${GREEN}Github repo cloned!\n${NC}"
 
 
 copy-sources:
-	cp -r original-sources/* gitlab-sources/
+	@echo "${YELLOW}Copying sources to gitlab repo...${NC}"
+	cp -r original-sources/* gitlab-repo/
+	@echo "${GREEN}Sources copied!\n${NC}"
 
 
 delete-original:
+	@echo "${YELLOW}Deleting original sources...${NC}"
 	rm -rf original-sources
+	@echo "${GREEN}Original sources deleted!\n${NC}"
 
 push-gitlab:
-	cd gitlab-sources/ && git add . && git commit -m "Update sources" && git push
+	@echo "${YELLOW}Pushing sources to gitlab...${NC}"
+	cd gitlab-repo/ && sudo git config user.email "admin@example.com" && sudo git config user.name "root" && sudo git add . && sudo git commit -m "Update sources" && sudo git push
+	@echo "${GREEN}Sources pushed to Gitlab!\n${NC}"
 
 
 argocd-forward:
-	sudo kubectl port-forward svc/argocd-server -n argocd 8080:443
+	@sleep 10
+	@echo "Starting ArgoCD port-forwarding in background..."
+	@nohup sudo kubectl port-forward -n argocd service/argocd-server 8181:443 > tmp/argocd-port-forward.log 2>&1 & echo $$! > tmp/.argocd-port-forward.pid
+	@echo "ArgoCD Port-forwarding started on localhost:8181"
+	@echo "Check tmp/argocd-port-forward.log for output"
 
 
-get-details: get-argocd-url get-password get-app-url
+argocd-stop-forward:
+	@if [ -f tmp/.argocd-port-forward.pid ]; then \
+		echo "Stopping ArgoCD port-forwarding process..."; \
+		kill `cat tmp/.argocd-port-forward.pid` || true; \
+		rm tmp/.argocd-port-forward.pid; \
+		rm tmp/argocd-port-forward.log; \
+	else \
+		echo "No ArgoCD port-forwarding process found."; \
+	fi
 
-get-password:
+
+get-details: get-gitlab-details get-argocd-details
+
+
+get-argocd-details: get-argocd-url get-argocd-password get-argocd-url get-app-url
+
+
+get-argocd-password:
 	@echo "${GREEN}cdagro web password:${NC}"
 	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 	@echo "\n"
+
 
 get-argocd-url:
 	@echo "${GREEN}agrocd web client URL: ${NC}"
 	@kubectl get svc argocd-server -n argocd
 	@echo "${GREEN}Port: 8080"
 
+
 get-app-url:
 	@echo "${GREEN}App URL:\n${NC}"
 	sudo kubectl get service -n dev
+
 
 get-gitlab-details:
 	@echo "${GREEN}Gitlab web client URL: ${NC}"
@@ -147,23 +183,19 @@ get-gitlab-details:
 	@sudo kubectl -n gitlab get secret gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode
 	@echo "\n"
 
+
 down:
 	@echo "${YELLOW}Turning off the VM..${NC}."
 	@vagrant halt
 	@echo "${GREEN}VM turned off${NC}"
 
-# Nettoie l'environnement en supprimant les VMs
-clean: gitlab-stop-forward
+
+clean: gitlab-stop-forward argocd-stop-forward
 	@echo "${YELLOW}Cleaning up the cluster and docker resources${NC}"
 	sudo k3d cluster delete ${CLUSTER_NAME}
 	@echo "${GREEN}Cluster ${CLUSTER_NAME} successfully deleted!\n${NC}"
-	sudo rm -rf *gitlab-port-forward.log nohop.out 
+	@if [ -d "tmp" ]; then sudo rm -rf tmp; fi
+	@if [ -d "gitlab-repo" ]; then sudo rm -rf gitlab-repo; fi
 
 
 re: clean all
-
-
-
-ssh-server:
-	@echo "${YELLOW}Connecting via SSH to the server...${NC}"
-	@vagrant ssh server

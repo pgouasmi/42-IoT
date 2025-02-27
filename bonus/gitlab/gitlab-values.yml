@@ -15,7 +15,9 @@ nginx-ingress:
 
 gitlab-runner:
   install: true  # Nécessaire pour les CI/CD pipelines
-  privileged: true
+  # privileged: true
+  runners:
+    privileged: true
 
 persistence:
   storageClass: "local-path"  # Ou votre classe de stockage par défaut dans k3d

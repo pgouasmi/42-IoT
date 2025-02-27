@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/pgouasmi/IoT-pgouasmi-p3.git'
+    repoURL: 'http://gitlab-webservice-default.gitlab.svc.cluster.local:8181/root/gitlab-repo.git'
     path: manifests
     targetRevision: main
   destination:

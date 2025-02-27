@@ -1,4 +1,4 @@
 .vagrant
 node-token
 tmp/
-/gitlab-repo
+gitlab-repo/
