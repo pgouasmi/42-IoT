@@ -2,3 +2,4 @@
 node-token
 tmp/
 gitlab-repo/
+argocd-gitlab-secret.yaml
