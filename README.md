@@ -1,6 +1,6 @@
 # Inception-of-Things Project
 
-## A small project to get to learn DevOps technologies, especially Kubernetes, ArgoCD, Gitlab and CI/CD pipelines.
+## A project to get to learn DevOps technologies, especially Kubernetes, ArgoCD, Gitlab and CI/CD pipelines.
 
 # BONUS PART:
 
