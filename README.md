@@ -2,7 +2,7 @@
 
 ## A small project to get to learn DevOps technologies, especially Kubernetes, ArgoCD, Gitlab and CI/CD pipelines.
 
-BONUS PART:
+# BONUS PART:
 
 A complete local Kubernetes development environment with GitLab and ArgoCD for continuous deployment.
 
