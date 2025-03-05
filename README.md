@@ -135,7 +135,3 @@ If you need to completely restart:
 ```bash
 make re
 ```
-
-## License
-
-This project is available under the MIT License.
