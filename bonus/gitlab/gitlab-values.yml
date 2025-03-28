@@ -4,23 +4,22 @@ global:
     https: false
   ingress:
     configureCertmanager: false
-    class: "traefik"  # Ou votre classe d'ingress
+    class: "traefik"
   edition: ce
 
 certmanager:
   install: false
 
 nginx-ingress:
-  enabled: false  # Désactivé car vous utilisez probablement déjà Traefik avec k3d
+  enabled: false
 
 gitlab-runner:
-  install: true  # Nécessaire pour les CI/CD pipelines
-  # privileged: true
+  install: true
   runners:
     privileged: true
 
 persistence:
-  storageClass: "local-path"  # Ou votre classe de stockage par défaut dans k3d
+  storageClass: "local-path"
 
 postgresql:
   persistence:
