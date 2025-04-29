@@ -42,7 +42,7 @@ fi
 
 echo "Clonage du dépôt..."
 TEMP_DIR=$(mktemp -d)
-REPO_URL="http://oauth2:${TOKEN}@gitlab.gitlab.k3d.local:8080/${REPO_PATH}.git"
+REPO_URL="http://oauth2:${TOKEN}@gitlab.k3d.local:8080/${REPO_PATH}.git"
 git clone "$REPO_URL" "$TEMP_DIR"
 
 if [ $? -ne 0 ]; then
@@ -72,7 +72,7 @@ fi
 echo ""
 echo "========================================"
 echo "Dépôt créé et configuré avec succès!"
-echo "URL du dépôt: http://gitlab.gitlab.k3d.local:8080/${REPO_PATH}"
+echo "URL du dépôt: http://gitlab.k3d.local:8080/${REPO_PATH}"
 echo "Token d'accès: $TOKEN"
 echo "Pour cloner le dépôt ailleurs, utilisez:"
 echo "git clone $REPO_URL"
