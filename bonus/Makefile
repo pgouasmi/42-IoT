@@ -36,7 +36,7 @@ setup-cluster:
 	@echo "${YELLOW}Setting up Cluster and its namespaces${NC}"
 
 	@echo "${YELLOW}Creating Cluster ${CLUSTER_NAME} with k3d...${NC}"
-	k3d cluster create ${CLUSTER_NAME}
+	k3d cluster create ${CLUSTER_NAME} --api-port 6550 --port "80:80@loadbalancer" --port "443:443@loadbalancer"
 	@echo "${GREEN}Cluster ${CLUSTER_NAME} successfully created!\n${NC}"
 
 	@echo "${YELLOW}Creating 'argocd' namespace in ${CLUSTER_NAME} cluster...${NC}"
@@ -138,6 +138,14 @@ argocd-forward:
 	@nohup sudo kubectl port-forward -n argocd service/argocd-server 8181:443 > tmp/argocd-port-forward.log 2>&1 & echo $$! > tmp/.argocd-port-forward.pid
 	@echo "ArgoCD Port-forwarding started on localhost:8181"
 	@echo "Check tmp/argocd-port-forward.log for output"
+
+
+app-forward:
+	@echo "Starting app port-forwarding in background..."
+	@nohup sudo kubectl port-forward -n dev service/wil-playground-service 8888:8888 > tmp/app-port-forward.log 2>&1 & echo $$! > tmp/.app-port-forward.pid
+	@echo "App Port-forwarding started on localhost:8888"
+	@echo "Check tmp/app-port-forward.log for output"
+
 
 
 argocd-stop-forward:

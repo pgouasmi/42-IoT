@@ -1,0 +1,7 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: servertransport
+metadata:
+  name: insecure
+  namespace: argocd
+spec:
+  insecureSkipVerify: true
